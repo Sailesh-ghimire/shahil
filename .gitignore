@@ -25,3 +25,7 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# oh-my-claudecode session state (skills are the only committable part)
+/.omc/*
+!/.omc/skills/
