@@ -1,0 +1,14 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 6
+    paths:
+        - app
+        - database/seeders
+    tmpDir: storage/framework/cache/phpstan
+    ignoreErrors:
+        # Report rows are plain objects; PHPStan's object shapes aren't seen as stdClass inside a Collection.
+        -
+            message: '#should return Illuminate\\Support\\Collection<int, stdClass> but returns Illuminate\\Support\\Collection<int, object\{.*\}&stdClass>#'
+            path: app/Support/Reports/SalesMetrics.php

@@ -1,0 +1,28 @@
+# Production image: code and vendor baked in, OPcache on, caches built at start.
+# Build from the project root:  docker build -f docker/php/Dockerfile.prod -t workspace-crm:latest .
+
+FROM serversideup/php:8.5-fpm-nginx AS base
+
+USER root
+RUN install-php-extensions intl bcmath gd exif
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+ENV PHP_OPCACHE_ENABLE=1 \
+    PHP_OPCACHE_VALIDATE_TIMESTAMPS=0 \
+    AUTORUN_ENABLED=true \
+    AUTORUN_LARAVEL_MIGRATION=true \
+    SSL_MODE=off \
+    SHOW_WELCOME_MESSAGE=false
+
+WORKDIR /var/www/html
+
+COPY --chown=www-data:www-data composer.json composer.lock ./
+RUN composer install --no-dev --no-interaction --no-scripts --no-autoloader --prefer-dist
+
+COPY --chown=www-data:www-data . .
+RUN composer dump-autoload --no-dev --optimize --classmap-authoritative \
+    && php artisan package:discover --ansi \
+    && mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs storage/app \
+    && chown -R www-data:www-data storage bootstrap/cache
+
+USER www-data
